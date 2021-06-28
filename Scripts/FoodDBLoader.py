@@ -1,6 +1,6 @@
 import DBConnection as DB
 import pandas as pd
-
+import json
 
 class DataFood:
     DBConnection = None
@@ -38,3 +38,21 @@ class DataFood:
             insert_query = f'use Food; insert into steps(step_name) values({json.dumps(step)});'
             self.DBConnection.execute_query(insert_query, multi=True)
         self.DBConnection.commit()
+
+    def load_ingredients(self):
+        ingredients = self.raw_recipes["ingredients"].explode().dropna().unique()
+        for ingredient in ingredients:
+            insert_query = f'use Food; insert into ingredients(ingredient_name) values({json.dumps(ingredient)});'
+            self.DBConnection.execute_query(insert_query, multi=True)
+        self.DBConnection.commit()
+
+    def add_recipe_row(self, row):
+        insert_query = f'use Food; insert into recipes values({row["id"]}, {json.dumps(row["name"])}, {row["minutes"]},' \
+                       f' "{row["submitted"]}", {row["contributor_id"]}, {json.dumps(row["description"])}, {row["n_steps"]}, {row["n_ingredients"]});'
+        self.DBConnection.execute_query(insert_query, multi=True)
+        pass
+
+    def load_recipes(self):
+        self.raw_recipes.apply(lambda row: self.add_recipe_row(row), axis=1)
+        self.DBConnection.commit()
+        pass
