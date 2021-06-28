@@ -4,21 +4,28 @@ import DBConnection as DB
 import pandas as pd
 
 
-class DataFood:
+class FoodDBLoader:
     DBConnection = None
     raw_recipes = None
+    raw_interactions = None
 
     def __init__(self):
-        print("Loading and unpacking raw data.")
-        self.raw_recipes = pd.read_csv("Food/RAW_recipes.csv", converters={'tags': eval, 'steps': eval, 'ingredients': eval})
         self.start_connection()
+
+    def get_recipes_raw_data(self):
+        print("Loading and unpacking raw data.")
+        self.raw_recipes = pd.read_csv("../Food/RAW_recipes.csv", converters={'tags': eval, 'steps': eval, 'ingredients': eval})
+
+    def get_interactions_raw_data(self):
+        print("Loading and unpacking raw data.")
+        self.raw_recipes = pd.read_csv("../Food/RAW_interactions.csv")
 
     def start_connection(self):
         print("Attempting to connect to database env.")
-        self.DBConnection = DB.DBConnection(config_file="config.json")
+        self.DBConnection = DB.DBConnection()
         self.DBConnection.connect()
 
-    def create_model_from_file(self, sql_file_path="SQL/FoodDB.sql"):
+    def create_model_from_file(self, sql_file_path="../SQL/FoodDB.sql"):
         print(f"Attempting to create model from file {sql_file_path}.")
         self.DBConnection.execute_query_from_file(sql_file_path)
         self.DBConnection.commit()
@@ -134,3 +141,28 @@ class DataFood:
         self.raw_recipes.apply(lambda row: self.add_recipe_step_row(row), axis=1)
         self.DBConnection.commit()
         print("Recipes-steps successfully committed to the database.\n")
+
+    def add_interactions_row(self, row):
+        insert_query = f'use Food; insert into interactions values({row["user_id"]}, {row["recipe_id"]}, {row["date"]},{row["rating"]},' \
+                       f' {json.dumps(row["review"])};'
+        self.DBConnection.execute_query(insert_query)
+
+    def load_interactions(self):
+        print("Extracting interactions from raw data.")
+        print("Inserting interactions data into the database.")
+        self.raw_interactions.apply(lambda row: self.add_interactions_row(row), axis=1)
+        self.DBConnection.commit()
+        print("Recipes-steps successfully committed to the database.\n")
+
+    def load_all_data(self, create_model = True):
+        if create_model:
+            self.create_model_from_file()
+        self.clean_recipes_dataset()
+        self.load_contributors()
+        self.load_tags()
+        self.load_ingredients()
+        self.load_steps()
+        self.load_recipes()
+        self.load_recipes_tags()
+        self.load_ingredients()
+        self.load_recipes_steps()
