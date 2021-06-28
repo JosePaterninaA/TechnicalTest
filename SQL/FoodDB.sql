@@ -12,10 +12,11 @@ CREATE TABLE recipes (
     name VARCHAR(100),
     minutes INT(4),
     submitted DATE,
-    contributor_id INT,
-    description VARCHAR(1000),
+    contributor_id INT(10),
+    description VARCHAR(10000),
     n_steps INT,
     n_ingredients INT,
+    FOREIGN KEY (contributor_id) REFERENCES users(user_id),
     PRIMARY KEY (recipe_id)
 );
 
@@ -25,7 +26,7 @@ CREATE TABLE interactions (
     recipe_id INT(10),
     date DATE,
     rating INT,
-    review VARCHAR(1000),
+    review VARCHAR(2000),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (recipe_id) REFERENCES recipes(recipe_id),
     PRIMARY KEY (interaction_id)
@@ -33,7 +34,7 @@ CREATE TABLE interactions (
 
 CREATE TABLE tags(
     tag_id INT(10) AUTO_INCREMENT,
-    tag_name VARCHAR(100),
+    tag_name VARCHAR(1000),
     PRIMARY KEY (tag_id)
 );
 
@@ -46,7 +47,7 @@ CREATE TABLE recipes_tags(
 
 CREATE TABLE ingredients(
     ingredient_id INT(10) AUTO_INCREMENT,
-    ingredient_name VARCHAR(50),
+    ingredient_name VARCHAR(1000),
     PRIMARY KEY (ingredient_id)
 );
 
@@ -59,7 +60,7 @@ CREATE TABLE recipes_ingredients(
 
 CREATE TABLE steps(
     step_id INT(10) AUTO_INCREMENT,
-    step_name VARCHAR(2000),
+    step_name VARCHAR(1000),
     PRIMARY KEY (step_id)
 );
 
