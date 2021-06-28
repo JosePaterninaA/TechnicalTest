@@ -41,6 +41,16 @@ class FoodDBLoader:
         self.raw_recipes["submitted"] = self.raw_recipes["submitted"].dt.date
         print("Recipes data cleaned successfully.\n")
 
+    def clean_interactions_dataset(self):
+        print("Cleaning interactions data.")
+        print("Removing empty rows.")
+        self.raw_interactions = self.raw_interactions.dropna()
+        print("Removing faulty submission dates.")
+        self.raw_interactions["date"] = pd.to_datetime(self.raw_interactions["date"], errors='coerce')
+        self.raw_interactions.dropna(subset=['date'], inplace=True)
+        self.raw_interactions["date"] = self.raw_interactions["date"].dt.date
+        print("Interactions data cleaned successfully.\n")
+
     def load_contributors(self):
         print("Extracting users from raw data.")
         print("Cleaning users from raw data.")
