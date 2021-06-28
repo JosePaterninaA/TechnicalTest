@@ -50,33 +50,35 @@ class DBConnection:
         self.CURSOR.close()
         self.CONNECTION.close()
 
-    def execute_query(self, query, multi):
+    def execute_query(self, query, with_log=False):
         results = self.CURSOR.execute(query, multi=True)
         for result in results:
-            if result.with_rows:
-                print("Rows produced by statement '{}':".format(
-                    result.statement))
-                print(result.fetchall())
-            else:
-                print("Number of rows affected by statement '{}': {}".format(
-                    result.statement, result.rowcount))
-        print("Query execution succeeded.")
+            if with_log:
+                if result.with_rows:
+                    print("Rows produced by statement '{}':".format(
+                        result.statement))
+                    print(result.fetchall())
+                else:
+                    print("Number of rows affected by statement '{}': {}".format(
+                        result.statement, result.rowcount))
+                print("Query execution succeeded.\n")
 
-    def execute_query_from_file(self, file_path):
+    def execute_query_from_file(self, file_path, with_log=False):
         try:
             with open(file_path) as file:
                 results = self.CURSOR.execute(file.read(), multi=True)
                 for result in results:
-                    if result.with_rows:
-                        print("Rows produced by statement '{}':".format(
-                            result.statement))
-                        print(result.fetchall())
-                    else:
-                        print("Number of rows affected by statement '{}': {}".format(
-                            result.statement, result.rowcount))
-                print("Query execution succeeded.")
+                    if with_log:
+                        if result.with_rows:
+                            print("Rows produced by statement '{}':".format(
+                                result.statement))
+                            print(result.fetchall())
+                        else:
+                            print("Number of rows affected by statement '{}': {}".format(
+                                result.statement, result.rowcount))
+                        print("Query execution succeeded.\n")
         except FileNotFoundError:
-            print('File could not be open.')
+            print('File could not be open.\n')
 
     def commit(self):
         self.CONNECTION.commit()
