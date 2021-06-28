@@ -1,6 +1,7 @@
+import json
+
 import DBConnection as DB
 import pandas as pd
-import json
 
 
 class DataFood:
@@ -88,3 +89,48 @@ class DataFood:
         self.raw_recipes.apply(lambda row: self.add_recipe_row(row), axis=1)
         self.DBConnection.commit()
         print("Recipes successfully committed to the database.\n")
+
+    def add_recipe_tag_row(self, row):
+        recipe_id = row["id"]
+        tags = row["tags"]
+        for tag in tags:
+            if tag:
+                insert_query = f'use Food; insert into recipes_tags values ({recipe_id}, (select tag_id from tags where tag_name = {json.dumps(tag)}));'
+                self.DBConnection.execute_query(insert_query)
+
+    def load_recipes_tags(self):
+        print("Extracting recipes-tags from raw data.")
+        print("Inserting recipes-tags data into the database.")
+        self.raw_recipes.apply(lambda row: self.add_recipe_tag_row(row), axis=1)
+        self.DBConnection.commit()
+        print("Recipes-tags successfully committed to the database.\n")
+
+    def add_recipe_ingredient_row(self, row):
+        recipe_id = row["id"]
+        ingredients = row["ingredients"]
+        for ingredient in ingredients:
+            if ingredient:
+                insert_query = f'use Food; insert into recipes_ingredients values ({recipe_id}, (select ingredient_id from ingredients where ingredient_name = {json.dumps(ingredient)}));'
+                self.DBConnection.execute_query(insert_query)
+
+    def load_recipes_ingredients(self):
+        print("Extracting recipes-ingredients from raw data.")
+        print("Inserting recipes-ingredients data into the database.")
+        self.raw_recipes.apply(lambda row: self.add_recipe_ingredient_row(row), axis=1)
+        self.DBConnection.commit()
+        print("Recipes-ingredients successfully committed to the database.\n")
+
+    def add_recipe_step_row(self, row):
+        recipe_id = row["id"]
+        steps = row["steps"]
+        for step in steps:
+            if step:
+                insert_query = f'use Food; insert into recipes_steps values ({recipe_id}, (select step_id from steps where step_name = {json.dumps(step)}));'
+                self.DBConnection.execute_query(insert_query)
+
+    def load_recipes_steps(self):
+        print("Extracting recipes-steps from raw data.")
+        print("Inserting recipes-steps data into the database.")
+        self.raw_recipes.apply(lambda row: self.add_recipe_step_row(row), axis=1)
+        self.DBConnection.commit()
+        print("Recipes-steps successfully committed to the database.\n")
