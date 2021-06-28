@@ -1,7 +1,9 @@
 import json
+from datetime import timedelta
 
 import DBConnection as DB
 import pandas as pd
+import time
 
 
 class FoodDBLoader:
@@ -14,11 +16,12 @@ class FoodDBLoader:
 
     def get_recipes_raw_data(self):
         print("Loading and unpacking raw data.")
-        self.raw_recipes = pd.read_csv("../Food/RAW_recipes.csv", converters={'tags': eval, 'steps': eval, 'ingredients': eval})
+        self.raw_recipes = pd.read_csv("../Food/RAW_recipes.csv",
+                                       converters={'tags': eval, 'steps': eval, 'ingredients': eval})
 
     def get_interactions_raw_data(self):
         print("Loading and unpacking raw data.")
-        self.raw_recipes = pd.read_csv("../Food/RAW_interactions.csv")
+        self.raw_interactions = pd.read_csv("../Food/RAW_interactions.csv")
 
     def start_connection(self):
         print("Attempting to connect to database env.")
@@ -45,7 +48,7 @@ class FoodDBLoader:
         print("Cleaning interactions data.")
         print("Removing empty rows.")
         self.raw_interactions = self.raw_interactions.dropna()
-        print("Removing faulty submission dates.")
+        print("Removing faulty dates.")
         self.raw_interactions["date"] = pd.to_datetime(self.raw_interactions["date"], errors='coerce')
         self.raw_interactions.dropna(subset=['date'], inplace=True)
         self.raw_interactions["date"] = self.raw_interactions["date"].dt.date
@@ -164,15 +167,30 @@ class FoodDBLoader:
         self.DBConnection.commit()
         print("Recipes-steps successfully committed to the database.\n")
 
-    def load_all_data(self, create_model = True):
+    def load_all_data(self, create_model=True):
+        start_time = time.time()
         if create_model:
             self.create_model_from_file()
+        self.get_recipes_raw_data()
+        self.get_interactions_raw_data()
         self.clean_recipes_dataset()
+        self.clean_interactions_dataset()
         self.load_contributors()
         self.load_tags()
         self.load_ingredients()
-        self.load_steps()
+        # self.load_steps()
         self.load_recipes()
-        self.load_recipes_tags()
+        # self.load_recipes_tags()
         self.load_ingredients()
-        self.load_recipes_steps()
+        # self.load_recipes_steps()
+        elapsed = time.time() - start_time
+        print(f'Time elapsed: {str(timedelta(seconds=elapsed))}')
+
+
+def run_loader():
+    fl = FoodDBLoader()
+    fl.load_all_data()
+
+
+if __name__ == '__main__':
+    run_loader()
